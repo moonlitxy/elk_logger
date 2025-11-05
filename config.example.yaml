@@ -1,0 +1,123 @@
+# ELK Logger配置示例文件
+# 复制此文件为 config.yaml 并根据实际情况修改
+
+# Elasticsearch配置
+elasticsearch:
+  # ES集群地址列表
+  addresses:
+    - http://localhost:9200
+    # - http://es-node2:9200
+    # - http://es-node3:9200
+  
+  # 认证信息（如果ES启用了安全功能）
+  username: ""
+  password: ""
+  
+  # 索引模式
+  # 支持的变量: {date}、{year}、{month}、{day}
+  # {date} 会被替换为 YYYY.MM.DD 格式
+  index_pattern: "logs-{date}"
+
+# 批量发送配置
+batch:
+  # 批量大小（日志条数）
+  # 达到此数量会触发发送
+  size: 100
+  
+  # 批量超时（秒）
+  # 自上次发送后，超过此时间会触发发送
+  timeout: 5
+  
+  # 强制刷新间隔（秒）
+  # 定期检查并刷新缓冲区
+  flush_interval: 10
+
+# 队列配置
+queue:
+  # 队列大小
+  # 建议设置为 batch_size * 100
+  size: 10000
+  
+  # 工作协程数
+  # 处理队列中日志的并发数
+  worker_count: 4
+  
+  # 队列满时是否丢弃新日志
+  # false: 阻塞等待（默认）
+  # true: 丢弃新日志
+  discard_on_full: false
+
+# 重试配置
+retry:
+  # 最大重试次数
+  count: 3
+  
+  # 重试间隔（秒）
+  interval: 1
+  
+  # 最大重试退避时间（秒）
+  # 使用指数退避策略，但不超过此值
+  max_backoff: 30
+
+# 应用信息
+application:
+  # 服务名称
+  # 会添加到每条日志的 service.name 字段
+  service_name: "my-application"
+  
+  # 环境
+  # 如: development, staging, production
+  environment: "development"
+  
+  # 是否启用主机信息
+  # 会添加 host.name 和 host.ip 字段
+  enable_host_info: true
+
+# 高级配置
+advanced:
+  # 是否启用压缩
+  # 启用后可减少50%以上的网络传输
+  enable_compression: true
+  
+  # 连接超时（秒）
+  connection_timeout: 10
+  
+  # 是否启用调试日志
+  enable_debug: false
+
+# 开发环境配置示例
+# development:
+#   elasticsearch:
+#     addresses:
+#       - http://localhost:9200
+#   application:
+#     service_name: "myapp-dev"
+#     environment: "development"
+#   batch:
+#     size: 50
+#     flush_interval: 5
+
+# 生产环境配置示例
+# production:
+#   elasticsearch:
+#     addresses:
+#       - http://es-prod-1:9200
+#       - http://es-prod-2:9200
+#       - http://es-prod-3:9200
+#     username: "elk_user"
+#     password: "your-password"
+#   application:
+#     service_name: "myapp-prod"
+#     environment: "production"
+#   batch:
+#     size: 500
+#     timeout: 10
+#     flush_interval: 30
+#   queue:
+#     size: 50000
+#     worker_count: 8
+#   retry:
+#     count: 5
+#     interval: 2
+#     max_backoff: 60
+

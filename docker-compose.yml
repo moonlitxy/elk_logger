@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  # Elasticsearch服务
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    container_name: elk_logger_elasticsearch
+    environment:
+      # 单节点模式
+      - discovery.type=single-node
+      # JVM堆大小设置
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      # 禁用安全功能（仅用于开发环境）
+      - xpack.security.enabled=false
+      # 禁用ML功能以节省资源
+      - xpack.ml.enabled=false
+    ports:
+      - "9200:9200"  # REST API
+      - "9300:9300"  # 节点间通信
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - elk_network
+
+  # Kibana服务（可选，用于可视化）
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.11.0
+    container_name: elk_logger_kibana
+    ports:
+      - "5601:5601"
+    environment:
+      # 连接到Elasticsearch
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      # 设置语言为中文
+      - I18N_LOCALE=zh-CN
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5601/api/status || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - elk_network
+
+volumes:
+  es_data:
+    driver: local
+
+networks:
+  elk_network:
+    driver: bridge
+
